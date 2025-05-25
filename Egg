@@ -1,0 +1,45 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local backpack = player:WaitForChild("Backpack")
+local character = player.Character or player.CharacterAdded:Wait()
+
+local itemNombre = "Protein egg" -- Nombre exacto del item
+
+local function usarItemSinInterrumpir()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    -- Guardar herramienta equipada actualmente (ej. pesas)
+    local herramientaActual = humanoid:FindFirstChildOfClass("Tool")
+    local nombreHerramienta = herramientaActual and herramientaActual.Name
+
+    -- Buscar el "Protein egg"
+    local item = backpack:FindFirstChild(itemNombre) or character:FindFirstChild(itemNombre)
+
+    if item and item:IsA("Tool") then
+        -- Equipar si está en mochila
+        if item.Parent == backpack then
+            humanoid:EquipTool(item)
+            task.wait(0.5)
+        end
+        item:Activate()
+        print("[AUTO PROTEIN EGG] Se usó: " .. itemNombre)
+
+        task.wait(1)
+
+        -- Re-equipar herramienta anterior si existe
+        if nombreHerramienta and backpack:FindFirstChild(nombreHerramienta) then
+            humanoid:EquipTool(backpack:FindFirstChild(nombreHerramienta))
+            print("[AUTO PROTEIN EGG] Herramienta re-equipada: " .. nombreHerramienta)
+        end
+    else
+        warn("[AUTO PROTEIN EGG] No se encontró: " .. itemNombre)
+    end
+end
+
+-- Ejecutar cada 30 minutos
+task.spawn(function()
+    while true do
+        usarItemSinInterrumpir()
+        task.wait(1800) -- 1800 segundos = 30 minutos
+    end
+end)
