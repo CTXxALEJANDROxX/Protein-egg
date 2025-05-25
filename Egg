@@ -2,31 +2,40 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
-local PROTEIN_EGG_NAME = "ProteinEgg"
+local PROTEIN_EGG_NAME = "Protein Egg"
 local PROTEIN_EGG_INTERVAL = 30 * 60
 
--- Estado del sistema
 local proteinEggEnabled = false
 local lastProteinEggTime = 0
 
--- Función para usar el huevo
 local function usarProteinEgg()
     if not proteinEggEnabled then return end
 
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if not backpack then return end
+    local sources = {
+        LocalPlayer:FindFirstChild("Backpack"),
+        LocalPlayer:FindFirstChild("consumablesFolder")
+    }
 
-    for _, item in pairs(backpack:GetChildren()) do
-        if item.Name == PROTEIN_EGG_NAME then
-            ReplicatedStorage.rEvents.eatEvent:FireServer("eat", item)
-            print("[PROTEIN EGG] Huevo consumido.")
-            lastProteinEggTime = tick()
-            break
+    for _, folder in pairs(sources) do
+        if folder then
+            for _, item in pairs(folder:GetChildren()) do
+                if item.Name == PROTEIN_EGG_NAME then
+                    if ReplicatedStorage:FindFirstChild("rEvents") and ReplicatedStorage.rEvents:FindFirstChild("eatEvent") then
+                        ReplicatedStorage.rEvents.eatEvent:FireServer("eat", item)
+                        print("[PROTEIN EGG] Huevo consumido.")
+                        lastProteinEggTime = tick()
+                        return
+                    else
+                        warn("[PROTEIN EGG] No se encontró eatEvent.")
+                    end
+                end
+            end
         end
     end
+
+    warn("[PROTEIN EGG] No se encontró el huevo.")
 end
 
--- Bucle automático cada 30 minutos
 task.spawn(function()
     while true do
         if proteinEggEnabled and (tick() - lastProteinEggTime >= PROTEIN_EGG_INTERVAL) then
@@ -35,9 +44,3 @@ task.spawn(function()
         task.wait(5)
     end
 end)
-
--- Conexión al botón del menú (cambia "Protein Egg Auto" por el texto que uses en tu botón)
-if name == "Protein Egg Auto" then
-    proteinEggEnabled = isActive
-    print("[PROTEIN EGG] Auto uso activado:", proteinEggEnabled)
-end
