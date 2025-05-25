@@ -1,41 +1,32 @@
 local Players = game:GetService("Players")
 local VirtualInputManager = game:GetService("VirtualInputManager")
-
 local player = Players.LocalPlayer
-local backpack = player:WaitForChild("Backpack")
-local character = player.Character or player.CharacterAdded:Wait()
-
-local itemNombre = "Protein egg"
 
 local function usarProteinEgg()
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-
-    local herramientaActual = humanoid:FindFirstChildOfClass("Tool")
-    local nombreAnterior = herramientaActual and herramientaActual.Name
-
-    local huevo = backpack:FindFirstChild(itemNombre)
-    if not huevo then
-        warn("[AUTO PROTEIN EGG] No se encontró el huevo.")
+    local character = player.Character or player.CharacterAdded:Wait()
+    local backpack = player:WaitForChild("Backpack")
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    local proteinEgg = backpack:FindFirstChild("Protein egg")
+    if not proteinEgg then
+        warn("[AUTO EGG] No se encontró el Protein egg en el Backpack.")
         return
     end
 
     -- Equipar el huevo
-    humanoid:EquipTool(huevo)
+    humanoid:EquipTool(proteinEgg)
     task.wait(0.5)
 
-    -- Simular clic
-    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-    print("[AUTO PROTEIN EGG] Se usó el huevo.")
+    -- Mover mouse al centro de pantalla (puede variar según resolución)
+    VirtualInputManager:SendMouseMoveEvent(500, 300, game, 0)
+    task.wait(0.2)
 
-    task.wait(1)
+    -- Simular clic izquierdo (MouseButton1)
+    VirtualInputManager:SendMouseButtonEvent(500, 300, 0, true, game, 0)
+    task.wait(0.1)
+    VirtualInputManager:SendMouseButtonEvent(500, 300, 0, false, game, 0)
 
-    -- Re-equipar herramienta anterior
-    if nombreAnterior and backpack:FindFirstChild(nombreAnterior) then
-        humanoid:EquipTool(backpack:FindFirstChild(nombreAnterior))
-        print("[AUTO PROTEIN EGG] Herramienta re-equipada.")
-    end
+    print("[AUTO EGG] Se usó el Protein egg.")
 end
 
 -- Bucle cada 30 minutos
