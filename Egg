@@ -1,46 +1,28 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
+local player = game.Players.LocalPlayer
 
-local LocalPlayer = Players.LocalPlayer
-local PROTEIN_EGG_NAME = "Protein Egg"
-local PROTEIN_EGG_INTERVAL = 30 * 60
+local function usarHuevo()
+    local mochila = player:FindFirstChild("Backpack")
+    if not mochila then return end
 
-local proteinEggEnabled = false
-local lastProteinEggTime = 0
-
-local function usarProteinEgg()
-    if not proteinEggEnabled then return end
-
-    local sources = {
-        LocalPlayer:FindFirstChild("Backpack"),
-        LocalPlayer:FindFirstChild("consumablesFolder")
-    }
-
-    for _, folder in pairs(sources) do
-        if folder then
-            for _, item in pairs(folder:GetChildren()) do
-                if item.Name == PROTEIN_EGG_NAME then
-                    if ReplicatedStorage:FindFirstChild("rEvents") and ReplicatedStorage.rEvents:FindFirstChild("eatEvent") then
-                        ReplicatedStorage.rEvents.eatEvent:FireServer("eat", item)
-                        print("[PROTEIN EGG] Huevo consumido.")
-                        lastProteinEggTime = tick()
-                        return
-                    else
-                        warn("[PROTEIN EGG] No se encontró eatEvent.")
-                    end
-                end
-            end
+    for _, item in ipairs(mochila:GetChildren()) do
+        if item:IsA("Tool") and item.Name:lower():find("protein") then
+            item.Parent = player.Character
+            wait(0.5)
+            item:Activate()
+            print("[ALEJANDRO HUB] Huevo de proteína usado:", item.Name)
+            return true
         end
     end
 
-    warn("[PROTEIN EGG] No se encontró el huevo.")
+    warn("[ALEJANDRO HUB] No se encontró ningún huevo de proteína.")
+    return false
 end
 
-task.spawn(function()
-    while true do
-        if proteinEggEnabled and (tick() - lastProteinEggTime >= PROTEIN_EGG_INTERVAL) then
-            usarProteinEgg()
-        end
-        task.wait(5)
-    end
-end)
+-- Ejecutar una vez al cargar
+usarHuevo()
+
+-- Cada 30 minutos
+while true do
+    wait(1800)
+    usarHuevo()
+end
