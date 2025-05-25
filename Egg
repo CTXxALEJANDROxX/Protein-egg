@@ -1,45 +1,47 @@
 local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
 local player = Players.LocalPlayer
 local backpack = player:WaitForChild("Backpack")
 local character = player.Character or player.CharacterAdded:Wait()
 
-local itemNombre = "Protein egg" -- Nombre exacto del item
+local itemNombre = "Protein egg"
 
-local function usarItemSinInterrumpir()
-    local humanoid = character:WaitForChild("Humanoid")
+local function usarProteinEgg()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
 
-    -- Guardar herramienta equipada actualmente (ej. pesas)
     local herramientaActual = humanoid:FindFirstChildOfClass("Tool")
-    local nombreHerramienta = herramientaActual and herramientaActual.Name
+    local nombreAnterior = herramientaActual and herramientaActual.Name
 
-    -- Buscar el "Protein egg"
-    local item = backpack:FindFirstChild(itemNombre) or character:FindFirstChild(itemNombre)
+    local huevo = backpack:FindFirstChild(itemNombre)
+    if not huevo then
+        warn("[AUTO PROTEIN EGG] No se encontró el huevo.")
+        return
+    end
 
-    if item and item:IsA("Tool") then
-        -- Equipar si está en mochila
-        if item.Parent == backpack then
-            humanoid:EquipTool(item)
-            task.wait(0.5)
-        end
-        item:Activate()
-        print("[AUTO PROTEIN EGG] Se usó: " .. itemNombre)
+    -- Equipar el huevo
+    humanoid:EquipTool(huevo)
+    task.wait(0.5)
 
-        task.wait(1)
+    -- Simular clic
+    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+    print("[AUTO PROTEIN EGG] Se usó el huevo.")
 
-        -- Re-equipar herramienta anterior si existe
-        if nombreHerramienta and backpack:FindFirstChild(nombreHerramienta) then
-            humanoid:EquipTool(backpack:FindFirstChild(nombreHerramienta))
-            print("[AUTO PROTEIN EGG] Herramienta re-equipada: " .. nombreHerramienta)
-        end
-    else
-        warn("[AUTO PROTEIN EGG] No se encontró: " .. itemNombre)
+    task.wait(1)
+
+    -- Re-equipar herramienta anterior
+    if nombreAnterior and backpack:FindFirstChild(nombreAnterior) then
+        humanoid:EquipTool(backpack:FindFirstChild(nombreAnterior))
+        print("[AUTO PROTEIN EGG] Herramienta re-equipada.")
     end
 end
 
--- Ejecutar cada 30 minutos
+-- Bucle cada 30 minutos
 task.spawn(function()
     while true do
-        usarItemSinInterrumpir()
-        task.wait(1800) -- 1800 segundos = 30 minutos
+        usarProteinEgg()
+        task.wait(1800) -- 30 minutos
     end
 end)
