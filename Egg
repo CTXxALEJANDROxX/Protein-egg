@@ -1,38 +1,43 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local player = Players.LocalPlayer
 
+local LocalPlayer = Players.LocalPlayer
+local PROTEIN_EGG_NAME = "ProteinEgg"
+local PROTEIN_EGG_INTERVAL = 30 * 60
+
+-- Estado del sistema
+local proteinEggEnabled = false
+local lastProteinEggTime = 0
+
+-- Función para usar el huevo
 local function usarProteinEgg()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local backpack = player:WaitForChild("Backpack")
-    local humanoid = character:WaitForChild("Humanoid")
-    
-    local proteinEgg = backpack:FindFirstChild("Protein egg")
-    if not proteinEgg then
-        warn("[AUTO EGG] No se encontró el Protein egg en el Backpack.")
-        return
+    if not proteinEggEnabled then return end
+
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if not backpack then return end
+
+    for _, item in pairs(backpack:GetChildren()) do
+        if item.Name == PROTEIN_EGG_NAME then
+            ReplicatedStorage.rEvents.eatEvent:FireServer("eat", item)
+            print("[PROTEIN EGG] Huevo consumido.")
+            lastProteinEggTime = tick()
+            break
+        end
     end
-
-    -- Equipar el huevo
-    humanoid:EquipTool(proteinEgg)
-    task.wait(0.5)
-
-    -- Mover mouse al centro de pantalla (puede variar según resolución)
-    VirtualInputManager:SendMouseMoveEvent(500, 300, game, 0)
-    task.wait(0.2)
-
-    -- Simular clic izquierdo (MouseButton1)
-    VirtualInputManager:SendMouseButtonEvent(500, 300, 0, true, game, 0)
-    task.wait(0.1)
-    VirtualInputManager:SendMouseButtonEvent(500, 300, 0, false, game, 0)
-
-    print("[AUTO EGG] Se usó el Protein egg.")
 end
 
--- Bucle cada 30 minutos
+-- Bucle automático cada 30 minutos
 task.spawn(function()
     while true do
-        usarProteinEgg()
-        task.wait(1800) -- 30 minutos
+        if proteinEggEnabled and (tick() - lastProteinEggTime >= PROTEIN_EGG_INTERVAL) then
+            usarProteinEgg()
+        end
+        task.wait(5)
     end
 end)
+
+-- Conexión al botón del menú (cambia "Protein Egg Auto" por el texto que uses en tu botón)
+if name == "Protein Egg Auto" then
+    proteinEggEnabled = isActive
+    print("[PROTEIN EGG] Auto uso activado:", proteinEggEnabled)
+end
