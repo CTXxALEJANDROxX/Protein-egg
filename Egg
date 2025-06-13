@@ -33,7 +33,7 @@ if not _G.AutoProteinEggEnabled then
                 warn("No se encontró Protein Egg en Backpack o equipado")
             end
             -- Espera 29 minutos
-            for i = 1, 1790 do
+            for i = 1, 1750 do
                 if not _G.AutoProteinEggEnabled then break end
                 task.wait(1)
             end
