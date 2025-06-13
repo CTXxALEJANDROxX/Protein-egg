@@ -1,28 +1,47 @@
 local player = game.Players.LocalPlayer
+local toolName = "Protein Egg" -- Asegúrate de que el nombre sea EXACTO
+local char = player.Character or player.CharacterAdded:Wait()
 
-local function usarHuevo()
-    local mochila = player:FindFirstChild("Backpack")
-    if not mochila then return end
+if not _G.AutoProteinEggEnabled then
+    _G.AutoProteinEggEnabled = true
+    print("Auto Protein Egg ACTIVADO")
 
-    for _, item in ipairs(mochila:GetChildren()) do
-        if item:IsA("Tool") and item.Name:lower():find("protein") then
-            item.Parent = player.Character
-            wait(0.5)
-            item:Activate()
-            print("[ALEJANDRO HUB] Huevo de proteína usado:", item.Name)
-            return true
+    local function equipTool()
+        local bp = player.Backpack:FindFirstChild(toolName)
+        if bp then
+            char.Humanoid:EquipTool(bp)
         end
     end
 
-    warn("[ALEJANDRO HUB] No se encontró ningún huevo de proteína.")
-    return false
-end
+    -- Actualizar personaje si muere
+    player.CharacterAdded:Connect(function(c)
+        char = c
+        task.wait(1)
+    end)
 
--- Ejecutar una vez al cargar
-usarHuevo()
+    -- Bucle con espera de 29 minutos (1740 segundos)
+    task.spawn(function()
+        while _G.AutoProteinEggEnabled do
+            local tool = char:FindFirstChild(toolName) or player.Backpack:FindFirstChild(toolName)
+            if tool then
+                equipTool()
+                pcall(function()
+                    tool:Activate()
+                end)
+                print("Protein Egg consumido, esperando 29 minutos...")
+            else
+                warn("No se encontró Protein Egg en Backpack o equipado")
+            end
+            -- Espera 29 minutos
+            for i = 1, 1740 do
+                if not _G.AutoProteinEggEnabled then break end
+                task.wait(1)
+            end
+        end
+        print("Auto Protein Egg DESACTIVADO")
+    end)
 
--- Cada 30 minutos
-while true do
-    wait(1800)
-    usarHuevo()
+else
+    _G.AutoProteinEggEnabled = false
+    print("Auto Protein Egg DESACTIVADO")
 end
